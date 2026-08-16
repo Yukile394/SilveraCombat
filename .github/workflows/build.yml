@@ -9,25 +9,42 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
-    - name: Repository'yi Checkout Et
-      uses: actions/checkout@v4
+      - name: Repository'yi Checkout Et
+        uses: actions/checkout@v4
 
-    - name: Java 21 Kurulumu
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - name: Java 21 Kurulumu
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Gradle Wrapper Yetkilendirmesi
-      run: chmod +x ./gradlew
+      - name: Gradle Cache Kurulumu
+        uses: gradle/actions/setup-gradle@v4
 
-    - name: Gradle ile Build Al
-      run: ./gradlew build
+      - name: Gradle Wrapper Yetkilendirmesi
+        run: chmod +x ./gradlew
 
-    - name: Jar Dosyasını Artifact Olarak Yükle
-      uses: actions/upload-artifact@v4
-      with:
-        name: SilveraCombat
-        path: build/libs/SilveraCombat-*.jar
+      - name: Gradle Wrapper Dogrulama
+        run: ls -la ./gradlew && head -n 3 ./gradlew
+
+      - name: Gradle ile Build Al
+        run: ./gradlew clean build --info --stacktrace --no-daemon
+
+      - name: Build Ciktisini Dogrula
+        run: |
+          echo "build/libs icerigi:"
+          ls -la build/libs/
+          if ! ls build/libs/*.jar 1> /dev/null 2>&1; then
+            echo "::error::build/libs altinda .jar dosyasi bulunamadi. Build basarisiz sayilir."
+            exit 1
+          fi
+
+      - name: Jar Dosyasini Artifact Olarak Yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: SilveraCombat
+          path: build/libs/*.jar
+          if-no-files-found: error
