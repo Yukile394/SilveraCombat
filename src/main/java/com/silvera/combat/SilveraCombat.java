@@ -3,6 +3,8 @@ package com.silvera.combat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -16,6 +18,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,7 +27,7 @@ public class SilveraCombat extends JavaPlugin implements Listener {
 
     private final Map<UUID, Long> combatMap = new HashMap<>();
     private final MiniMessage mm = MiniMessage.miniMessage();
-    
+
     private int combatDuration;
     private String prefix;
     private String startMsg1;
@@ -32,12 +36,21 @@ public class SilveraCombat extends JavaPlugin implements Listener {
     private String cmdBlockedMsg;
     private String combatLogMsg;
     private String combatEndMsg;
+    private String statusInCombatMsg;
+    private String statusNotInCombatMsg;
+    private List<String> whitelistedCommands;
+
+    private static final String BYPASS_PERMISSION = "silvera.combat.bypass";
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         loadConfigValues();
         getServer().getPluginManager().registerEvents(this, this);
+
+        if (getCommand("kombat") != null) {
+            getCommand("kombat").setExecutor(this::onKombatCommand);
+        }
 
         new BukkitRunnable() {
             @Override
@@ -52,7 +65,7 @@ public class SilveraCombat extends JavaPlugin implements Listener {
                                 p.sendMessage(mm.deserialize(prefix + combatEndMsg));
                             }
                         }
-                        return true; 
+                        return true;
                     } else {
                         if (p != null && p.isOnline()) {
                             long remaining = (entry.getValue() - now) / 1000 + 1;
@@ -75,6 +88,9 @@ public class SilveraCombat extends JavaPlugin implements Listener {
         cmdBlockedMsg = c.getString("messages.cmd_blocked", "<#FFFFFF>Savas sirasinda komut kullanamazsin!");
         combatLogMsg = c.getString("messages.combat_log", "<#E85BB5>%player% <#FFFFFF>savas sirasinda oyundan ciktigi icin olduruldu!");
         combatEndMsg = c.getString("messages.combat_end", "");
+        statusInCombatMsg = c.getString("messages.status_in_combat", "<#FFFFFF>Savastasin! Kalan sure: <#FFB3E6>%time% saniye");
+        statusNotInCombatMsg = c.getString("messages.status_not_in_combat", "<#FFFFFF>Su an savasta degilsin.");
+        whitelistedCommands = c.getStringList("settings.whitelisted_commands");
     }
 
     @EventHandler
@@ -85,15 +101,19 @@ public class SilveraCombat extends JavaPlugin implements Listener {
         if (e.getDamager() instanceof Player) {
             attacker = (Player) e.getDamager();
         } else if (e.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player) {
-            attacker = (Player) proj.getShooter(); 
+            attacker = (Player) proj.getShooter();
         }
 
         if (attacker != null && victim != attacker) {
             long now = System.currentTimeMillis();
             long endTime = now + combatDuration;
 
-            setCombat(victim, endTime);
-            setCombat(attacker, endTime);
+            if (!victim.hasPermission(BYPASS_PERMISSION)) {
+                setCombat(victim, endTime);
+            }
+            if (!attacker.hasPermission(BYPASS_PERMISSION)) {
+                setCombat(attacker, endTime);
+            }
         }
     }
 
@@ -110,7 +130,7 @@ public class SilveraCombat extends JavaPlugin implements Listener {
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         if (combatMap.containsKey(p.getUniqueId())) {
-            p.setHealth(0.0); 
+            p.setHealth(0.0);
             combatMap.remove(p.getUniqueId());
             if (!combatLogMsg.isEmpty()) {
                 Bukkit.broadcast(mm.deserialize(prefix + combatLogMsg.replace("%player%", p.getName())));
@@ -133,9 +153,41 @@ public class SilveraCombat extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
-        if (combatMap.containsKey(e.getPlayer().getUniqueId())) {
-            e.setCancelled(true);
-            e.getPlayer().sendMessage(mm.deserialize(prefix + cmdBlockedMsg));
+        Player p = e.getPlayer();
+        if (!combatMap.containsKey(p.getUniqueId())) return;
+        if (p.hasPermission(BYPASS_PERMISSION)) return;
+
+        String rawLabel = e.getMessage().substring(1).split(" ")[0].toLowerCase(Locale.ROOT);
+        if (whitelistedCommands != null && whitelistedCommands.contains(rawLabel)) {
+            return; 
         }
+
+        e.setCancelled(true);
+        p.sendMessage(mm.deserialize(prefix + cmdBlockedMsg));
     }
-}
+
+    private boolean onKombatCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player p)) {
+            sender.sendMessage("Bu komut sadece oyuncular icindir.");
+            return true;
+        }
+
+        Long endTime = combatMap.get(p.getUniqueId());
+        if (endTime == null || endTime <= System.currentTimeMillis()) {
+            p.sendMessage(mm.deserialize(prefix + statusNotInCombatMsg));
+        } else {
+            long remaining = (endTime - System.currentTimeMillis()) / 1000 + 1;
+            p.sendMessage(mm.deserialize(prefix + statusInCombatMsg.replace("%time%", String.valueOf(remaining))));
+        }
+        return true;
+    }
+
+    /**
+     * Diger pluginlerin (LoginX, duel sistemi vb.) bu oyuncunun
+     * su an savasta olup olmadigini kontrol edebilmesi icin.
+     */
+    public boolean isInCombat(UUID uuid) {
+        Long endTime = combatMap.get(uuid);
+        return endTime != null && endTime > System.currentTimeMillis();
+    }
+            }
