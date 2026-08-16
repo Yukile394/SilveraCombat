@@ -1,0 +1,6 @@
+name: SilveraCombat
+version: 1.0.0
+main: com.silvera.combat.SilveraCombat
+api-version: "1.21"
+author: Silvera
+description: Profesyonel CombatLog ve Savas Sistemi

@@ -1,0 +1,17 @@
+settings:
+  # Savas suresi (Saniye)
+  duration: 10
+
+messages:
+  prefix: "<#FF8AD8>Silvera <#A0A0A0>» "
+  
+  start_message_1: "<#FFFFFF>Bu oyuncuyla savasa girdin!"
+  start_message_2: "<#FFFFFF>Savas sirasinda <#FFB3E6>oyundan cikma!"
+  
+  actionbar: "<#FF8AD8>Silvera <#A0A0A0>» <#FFFFFF>Savas suresi: <#FFB3E6>%time% saniye"
+  
+  cmd_blocked: "<#FFFFFF>Savas sirasinda komut kullanamazsin!"
+  
+  combat_log: "<#E85BB5>%player% <#FFFFFF>savas sirasinda oyundan ciktigi icin olduruldu!"
+  
+  combat_end: "" 
