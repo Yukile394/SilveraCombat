@@ -4,3 +4,13 @@ main: com.silvera.combat.SilveraCombat
 api-version: "1.21"
 author: Silvera
 description: Profesyonel CombatLog ve Savas Sistemi
+
+commands:
+  kombat:
+    description: Savas durumunu gosterir
+    usage: /kombat
+
+permissions:
+  silvera.combat.bypass:
+    description: Combat sistemine girmeyi ve komut engellemesini atlar
+    default: op
