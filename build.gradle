@@ -14,8 +14,17 @@ repositories {
 }
 
 dependencies {
-    // Paper 1.21+ API
-    compileOnly "io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT"
+    // Paper 1.21.4 API - stabil, resolve edilmiş bir snapshot sürümü.
+    compileOnly "io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT"
+}
+
+// Dependency çözümlemesi sırasında Gradle'ın ağ isteklerinde sonsuza kadar
+// beklemesini engellemek için timeout tanımı.
+configurations.all {
+    resolutionStrategy {
+        cacheDynamicVersionsFor 10, 'minutes'
+        cacheChangingModulesFor 10, 'minutes'
+    }
 }
 
 def targetJavaVersion = 21
