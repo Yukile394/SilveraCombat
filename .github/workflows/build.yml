@@ -1,0 +1,33 @@
+name: Build SilveraCombat
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Repository'yi Checkout Et
+      uses: actions/checkout@v4
+
+    - name: Java 21 Kurulumu
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Gradle Wrapper Yetkilendirmesi
+      run: chmod +x ./gradlew
+
+    - name: Gradle ile Build Al
+      run: ./gradlew build
+
+    - name: Jar Dosyasını Artifact Olarak Yükle
+      uses: actions/upload-artifact@v4
+      with:
+        name: SilveraCombat
+        path: build/libs/SilveraCombat-*.jar
