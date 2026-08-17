@@ -61,7 +61,7 @@ public class SilveraCombat extends JavaPlugin implements Listener {
                     if (entry.getValue() <= now) {
                         if (p != null && p.isOnline()) {
                             p.sendActionBar(Component.empty());
-                            if (!combatEndMsg.isEmpty()) {
+                            if (combatEndMsg != null && !combatEndMsg.isEmpty()) {
                                 p.sendMessage(mm.deserialize(prefix + combatEndMsg));
                             }
                         }
@@ -82,14 +82,14 @@ public class SilveraCombat extends JavaPlugin implements Listener {
         FileConfiguration c = getConfig();
         combatDuration = c.getInt("settings.duration", 10) * 1000;
         prefix = c.getString("messages.prefix", "<#FF8AD8>Silvera <#A0A0A0>» ");
-        startMsg1 = c.getString("messages.start_message_1", "<#FFFFFF>Bu oyuncuyla savasa girdin!");
-        startMsg2 = c.getString("messages.start_message_2", "<#FFFFFF>Savas sirasinda <#FFB3E6>oyundan cikma!");
-        actionbarMsg = c.getString("messages.actionbar", prefix + "<#FFFFFF>Savas suresi: <#FFB3E6>%time% saniye");
-        cmdBlockedMsg = c.getString("messages.cmd_blocked", "<#FFFFFF>Savas sirasinda komut kullanamazsin!");
-        combatLogMsg = c.getString("messages.combat_log", "<#E85BB5>%player% <#FFFFFF>savas sirasinda oyundan ciktigi icin olduruldu!");
-        combatEndMsg = c.getString("messages.combat_end", "");
-        statusInCombatMsg = c.getString("messages.status_in_combat", "<#FFFFFF>Savastasin! Kalan sure: <#FFB3E6>%time% saniye");
-        statusNotInCombatMsg = c.getString("messages.status_not_in_combat", "<#FFFFFF>Su an savasta degilsin.");
+        startMsg1 = c.getString("messages.start_message_1", "<#FFFFFF>Bu oyuncuyla savaşa girdin!");
+        startMsg2 = c.getString("messages.start_message_2", "<#FFFFFF>Savaş sırasında <#FFB3E6>oyundan çıkma!");
+        actionbarMsg = c.getString("messages.actionbar", prefix + "<#FFFFFF>Savaş süresi: <#FFB3E6>%time% saniye");
+        cmdBlockedMsg = c.getString("messages.cmd_blocked", "<#FFFFFF>Savaş sırasında komut kullanamazsın!");
+        combatLogMsg = c.getString("messages.combat_log", "<#E85BB5>%player% <#FFFFFF>savaş sırasında oyundan çıktığı için öldürüldü!");
+        combatEndMsg = c.getString("messages.combat_end", "<#FFFFFF>Silvera Savaş Sona Erdi!");
+        statusInCombatMsg = c.getString("messages.status_in_combat", "<#FFFFFF>Savaştasın! Kalan süre: <#FFB3E6>%time% saniye");
+        statusNotInCombatMsg = c.getString("messages.status_not_in_combat", "<#FFFFFF>Şu an savaşta değilsin.");
         whitelistedCommands = c.getStringList("settings.whitelisted_commands");
     }
 
@@ -190,4 +190,4 @@ public class SilveraCombat extends JavaPlugin implements Listener {
         Long endTime = combatMap.get(uuid);
         return endTime != null && endTime > System.currentTimeMillis();
     }
-            }
+}
