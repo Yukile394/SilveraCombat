@@ -3,9 +3,11 @@ package com.silvera.combat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -42,6 +44,14 @@ public class SilveraCombat extends JavaPlugin implements Listener {
 
     private static final String BYPASS_PERMISSION = "silvera.combat.bypass";
 
+    // --- Item Cleaner ayarlari ---
+    private static final long CLEANER_INTERVAL_SECONDS = 7 * 60; // 7 dakika
+    private static final long CLEANER_WARNING_SECONDS = 30; // silinmeden 30 sn once uyari
+    private long cleanerSecondsLeft = CLEANER_INTERVAL_SECONDS;
+    private String cleanerPrefix;
+    private String cleanerWarningMsg;
+    private String cleanerDoneMsg;
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -76,6 +86,32 @@ public class SilveraCombat extends JavaPlugin implements Listener {
                 });
             }
         }.runTaskTimer(this, 0L, 20L);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                cleanerSecondsLeft--;
+
+                if (cleanerSecondsLeft == CLEANER_WARNING_SECONDS) {
+                    Bukkit.broadcast(mm.deserialize(cleanerPrefix
+                            + cleanerWarningMsg.replace("%time%", String.valueOf(CLEANER_WARNING_SECONDS))));
+                }
+
+                if (cleanerSecondsLeft <= 0) {
+                    clearGroundItems();
+                    Bukkit.broadcast(mm.deserialize(cleanerPrefix + cleanerDoneMsg));
+                    cleanerSecondsLeft = CLEANER_INTERVAL_SECONDS;
+                }
+            }
+        }.runTaskTimer(this, 20L, 20L);
+    }
+
+    private void clearGroundItems() {
+        for (World world : Bukkit.getWorlds()) {
+            for (Item item : world.getEntitiesByClass(Item.class)) {
+                item.remove();
+            }
+        }
     }
 
     private void loadConfigValues() {
@@ -91,6 +127,10 @@ public class SilveraCombat extends JavaPlugin implements Listener {
         statusInCombatMsg = c.getString("messages.status_in_combat", "<#FFFFFF>Savaştasın! Kalan süre: <#FFB3E6>%time% saniye");
         statusNotInCombatMsg = c.getString("messages.status_not_in_combat", "<#FFFFFF>Şu an savaşta değilsin.");
         whitelistedCommands = c.getStringList("settings.whitelisted_commands");
+
+        cleanerPrefix = c.getString("messages.cleaner_prefix", "<#FF8AD8>Silvera <#A0A0A0>» ");
+        cleanerWarningMsg = c.getString("messages.cleaner_warning", "<#FFFFFF>%time% saniye sonra yerdeki eşyalar silinecek!");
+        cleanerDoneMsg = c.getString("messages.cleaner_done", "<#FFFFFF>Yerdeki Tüm Eşyalar Silindi!");
     }
 
     @EventHandler
