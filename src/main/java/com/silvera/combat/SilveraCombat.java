@@ -11,6 +11,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -133,9 +134,13 @@ public class SilveraCombat extends JavaPlugin implements Listener {
         cleanerDoneMsg = c.getString("messages.cleaner_done", "<#FFFFFF>Yerdeki Tüm Eşyalar Silindi!");
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e) {
         if (!(e.getEntity() instanceof Player victim)) return;
+
+        // WorldGuard veya baska bir plugin hasari iptal ettiyse (region flag pvp-deny vb.)
+        // ya da gercek hasar 0 ise (blocking, absorption vs.) combat'a sokma.
+        if (e.isCancelled() || e.getFinalDamage() <= 0.0) return;
 
         Player attacker = null;
         if (e.getDamager() instanceof Player) {
