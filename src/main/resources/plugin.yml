@@ -9,8 +9,3 @@ commands:
   kombat:
     description: Savas durumunu gosterir
     usage: /kombat
-
-permissions:
-  silvera.combat.bypass:
-    description: Combat sistemine girmeyi ve komut engellemesini atlar
-    default: op

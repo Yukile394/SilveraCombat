@@ -1,17 +1,22 @@
 settings:
-  # Savas suresi (Saniye)
+  # Savaş süresi (saniye)
   duration: 10
+  # Savaşta izin verilen komutlar (boş = hiçbir komut kullanılamaz)
+  whitelisted_commands: []
 
 messages:
   prefix: "<#FF8AD8>Silvera <#A0A0A0>» "
-  
-  start_message_1: "<#FFFFFF>Bu oyuncuyla savasa girdin!"
-  start_message_2: "<#FFFFFF>Savas sirasinda <#FFB3E6>oyundan cikma!"
-  
-  actionbar: "<#FF8AD8>Silvera <#A0A0A0>» <#FFFFFF>Savas suresi: <#FFB3E6>%time% saniye"
-  
-  cmd_blocked: "<#FFFFFF>Savas sirasinda komut kullanamazsin!"
-  
-  combat_log: "<#E85BB5>%player% <#FFFFFF>savas sirasinda oyundan ciktigi icin olduruldu!"
-  
-  combat_end: "" 
+
+  start_message_1: "<#FFFFFF>Bu oyuncuyla savaşa girdin!"
+  start_message_2: "<#FFFFFF>Savaş sırasında <#FFB3E6>oyundan çıkma!"
+
+  # Üstteki mavi bar. %time% = kalan saniye
+  bossbar: "<blue><bold>Savaş (%time%)"
+  bossbar_end: "<blue><bold>Savaştan çıktın"
+
+  cmd_blocked: "<#FFFFFF>Savaş sırasında komut kullanamazsın!"
+
+  combat_log: "<#E85BB5>%player% <#FFFFFF>savaş sırasında oyundan çıktığı için öldürüldü!"
+
+  status_in_combat: "<#FFFFFF>Savaştasın! Kalan süre: <#FFB3E6>%time% saniye"
+  status_not_in_combat: "<#FFFFFF>Şu an savaşta değilsin."
